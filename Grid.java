@@ -23,7 +23,7 @@ import java.util.Random;
 				CelList[x][y]=new GridCell(x,y);
 			}
 		}
-		CreateLevel(CelList);
+		CreateLevel();
 	}
 	public int GetCellWidth() {
 		return CellWidth;
@@ -43,11 +43,13 @@ import java.util.Random;
 	public Vector2 GetPosition(int x, int y) {
 		return new Vector2(x*CellWidth,y*CellHeight);
 	}
-	void CreateLevel(GridCell[][] k) {
+	void CreateLevel() {
 		for(int x=0;x<GridWidth;x++) {
 			for(int y=0;y<GridHeight;y++) {
 				if(x==0||y==0||x==GridWidth-1||y==GridHeight-1) {
-					k[x][y].Solid=true;
+					CelList[x][y].Solid=true;
+				}else {
+					CelList[x][y].Solid=false;					
 				}
 			}
 		}

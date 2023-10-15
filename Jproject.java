@@ -21,17 +21,18 @@ public class Jproject extends JFrame implements KeyListener {
 	
 	private static final long serialVersionUID = 1L;
 	private static JPanel contentPane;
-
+	static boolean RestartedGame=false;
 	
 	static JLabel[][] LabelList;
 	static Grid Level;
-	final int ScreenWidth=800;
-	final int ScreenHeight=800;
-	final int GridWidth=16;
-	final int GridHeight=16;
+	static final int ScreenWidth=800;
+	static final int ScreenHeight=800;
+	static final int GridWidth=16;
+	static final int GridHeight=16;
 	static long GameSpeed=100;
 	static Player MainPlayer;
-	static Vector2 TailMove;
+	static boolean Gamerun=true;
+
 	static MoveDirection currentDirection=MoveDirection.LEFT;
 	static Color SnakeColor=new Color(0,170,0);
 	static Color GrassColor=new Color(120,200,90);
@@ -56,6 +57,8 @@ public class Jproject extends JFrame implements KeyListener {
 		this.addKeyListener(this);
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
+		
 		Level=new Grid(ScreenWidth,ScreenHeight,GridWidth,GridHeight);
 		LabelList=new JLabel[GridWidth][GridHeight];
 		Vector2 Pos;
@@ -79,9 +82,9 @@ public class Jproject extends JFrame implements KeyListener {
 		}
 		LabelList[MainPlayer.FrontPos.x][MainPlayer.FrontPos.x].setBackground(SnakeColor);
 		LabelList[MainPlayer.BackPos.x][MainPlayer.BackPos.y].setBackground(SnakeColor);
-		TailMove=MainPlayer.FrontPos;
+
 	}
-	
+
 	static void GameLoop() {
 
 		try {
@@ -92,7 +95,13 @@ public class Jproject extends JFrame implements KeyListener {
 
 		System.out.println("RAN");
 		MainPlayer.MoveFront(currentDirection);
-		if(Level.CelList[MainPlayer.FrontPos.x][MainPlayer.FrontPos.y].Solid==true) {System.out.print("haha");	return;}
+		if(Level.CelList[MainPlayer.FrontPos.x][MainPlayer.FrontPos.y].Solid==true) {
+			System.out.print("haha");
+			Level.CelList[Level.ApplePos.x][Level.ApplePos.y].HasApple=false;
+			LabelList[Level.ApplePos.x][Level.ApplePos.y].setBackground(GrassColor);			
+			Gamerun=false;
+			RestartGame();
+		}
 		Level.CelList[MainPlayer.FrontPos.x][MainPlayer.FrontPos.y].Solid=true;
 		LabelList[MainPlayer.FrontPos.x][MainPlayer.FrontPos.y].setBackground(SnakeColor);
 		
@@ -109,12 +118,45 @@ public class Jproject extends JFrame implements KeyListener {
 			LabelList[Level.ApplePos.x][Level.ApplePos.y].setBackground(Color.red);
 			MainPlayer.MoveTail();
 		}
-		//System.out.println("xFront:"+MainPlayer.FrontPos.x+"    yFront: "+MainPlayer.FrontPos.y);
-		//System.out.println("xBack:"+MainPlayer.BackPos.x+"    yBack: "+MainPlayer.BackPos.y);
+		System.out.println("xFront:"+MainPlayer.FrontPos.x+"    yFront: "+MainPlayer.FrontPos.y);
+		System.out.println("xBack:"+MainPlayer.BackPos.x+"    yBack: "+MainPlayer.BackPos.y);
 		GameLoop();
 	} 
 
+		static void RestartGame() {
+			if(RestartedGame) {
+			RestartedGame=false;
+			Gamerun=true;
+			Level.CreateLevel();
+			MainPlayer=new Player(new Vector2(GridWidth/2,GridHeight/2),Level.CelList,GridWidth,GridHeight);
+			
+			Level.SpawnApple();
+			for(int x=0;x<Level.GetGridWidth();x++) {
+				for(int y=0;y<Level.GetGridHeight();y++) {
 
+					if(Level.CelList[x][y].Solid==true) { LabelList[x][y].setBackground(Color.gray);
+			
+					}else {LabelList[x][y].setBackground(GrassColor);}
+					
+					if(Level.CelList[x][y].HasApple) { LabelList[x][y].setBackground(Color.red); }
+					//System.out.println("x: "+Pos.x+"  y: "+Pos.y+"  CellWidth: "+Level.GetCellWidth()+"  CellHeight: "+Level.GetCellHeight());;			
+					
+				}
+			}
+			LabelList[MainPlayer.FrontPos.x][MainPlayer.FrontPos.y].setBackground(SnakeColor);
+			LabelList[MainPlayer.BackPos.x][MainPlayer.BackPos.y].setBackground(SnakeColor);
+			currentDirection=MoveDirection.LEFT;
+			GameLoop();
+			}else {
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				RestartGame();
+			}
+		}
 
 	@Override
 	public void keyTyped(KeyEvent e) {
@@ -127,7 +169,10 @@ public class Jproject extends JFrame implements KeyListener {
 			if(MainPlayer.LastDirection!=MoveDirection.UP)		currentDirection=MoveDirection.DOWN;
 		}else if(LastInput=='W'||LastInput=='w') {
 			if(MainPlayer.LastDirection!=MoveDirection.DOWN)	currentDirection=MoveDirection.UP;
-		}	
+		}
+		if(!Gamerun&&LastInput=='p') {
+			RestartedGame=true;
+		}
 	}
 	
 	public void keyPressed(KeyEvent e) {	}
